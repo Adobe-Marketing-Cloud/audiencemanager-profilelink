@@ -27,12 +27,12 @@ For this demo we are going to use the Beta environment in Audience Manager, whic
 
 Your iMac is assigned a number between 1 and 50. Find out your number and use it to login:
 
-- **Username:** summit2017-**99** (replace **99** with your iMac number)
+- **Username:** summit2017-emea-**99** (replace **99** with your iMac number)
 - **Password:** AdobeSummit$2017
 
 _Note: If your computer number is less than 10, let‘s say 5, then use 05._
 
-<div align="center"><img src="https://cloud.githubusercontent.com/assets/952836/24138632/35fe96d6-0dd6-11e7-89a0-c7ece2a2e93f.png" align="AAM Login" height="300px" width="300px" ></div>
+<div align="center"><img src="https://cloud.githubusercontent.com/assets/952836/25873900/d9937456-3518-11e7-9344-51cb92893c97.png" align="AAM Login" height="300px" width="300px" ></div>
 
 ---
 
@@ -159,125 +159,6 @@ Let's get you qualified for the "Athletes" trait. On the bottom, you should see 
 
 ---
 
-<h1>Optional tasks</h1>
-
-<h2>How are we qualifying for the "Athletes" trait?</h2>
-
-When the browser loads the Athletes blog article, an HTTP call is being made to Adobe Audience Manager.
-This HTTP call contains two important pieces of information:
-- the Audience Manager user id
-- the data signals
-
-<h2>What is an Audience Manager ID?</h2>
-The AAM ID is NOT a cross device id. Therefore, if the user has 3 devices, it will have (at least) 3 AAM IDs. The AAM ID is stored in a third party cookie. If you happen to have and use two browsers on your device, these will not share the cookie storage. As such, we will get two distinct Audience Manager IDs, one for each browser. 
-<h2>What happens on mobile apps, where we don't have cookies?</h2>
-The mobile apps using the AAM SDK, will store the Audience Manager ID in the app's internal storage. Multiple apps installed on the same device, will have different AAM ids.
-<h2>How do we obtain an AAM id?</h2>
-In our case we are dealing with a website. The website is integrated with the VisitorID.js library, maintained by the Adobe Audience Manager team. This javascript library takes care of generating an Audience Manager ID, when none is available. It does so by triggering a call from the browser to the Visitor ID service.
-
-<h3>Optional task 1:</h3>
-Emulate the Visitor ID call to Audience Manager, which the VisitorID.js library is making from the browser.
-
-Open up the Terminal app on your iMac. Then copy paste this HTTP call command and press enter:
-```
-curl "http://dcs-beta.demdex.net/id?d_visid_ver=2.0.0&d_rtbd=json&d_ver=2&d_orgid=A71B5B5B54F607AB0A4C98A3%40AdobeOrg"
-```
-
-HTTP parameters sent:
-
-| Name                  | Description   |
-| --------------------- | ------------- |
-| d_visid_ver=2.0.0     | The VisitorID.js library version |
-| d_rtbd=json           | This parameter instructs AAM to return a json response |
-| d_orgid=...           | Represents the IMS organization id, which uniquely identifies the Audience Manager client which is making the call (eg. PopularRetailer) |
-
-
-Notice that the HTTP API contains `demdex.net`, which is the Audience Manager's domain.
-
-The formatted Visitor ID json response will look like this:
-
-```json
-{  
-   "d_mid":"88819962471507989271280036438453367558",
-   "id_sync_ttl":604800,
-   "d_blob":"cIBAx_aQzFEHcPoEv0GwcQ",
-   "dcs_region":7,
-   "d_ottl":7200,
-   "ibs":[  
-      {  
-         "id":"411",
-         "ttl":10080,
-         "tag":"img",
-         "fireURLSync":1,
-         "syncOnPage":1,
-         "url":[  
-            "//cm.everesttech.net/cm/dd?d_uuid=89334862240161643561259517779946724685"
-         ]
-      }
-   ],
-   "subdomain":"aamsummit"
-}
-```
-
-Notice the `d_mid` parameter, which represents the Marketing Cloud ID. The MID can be decoded by Audience Manager to obtain an AAM ID.
-
-<h2>We have an AAM ID. How do we send the data?</h2>
-In our situation, we want to notify Audience Manager that the current visitor has looked over the Athletes blog article. We do this by making a data collection HTTP call to Audience Manager.
-
-<h3>Optional task 2: Send realtime data to Audience Manager</h3>
-
-Open up the Terminal app on your iMac. Then copy paste this HTTP call command and press enter:
-```
-curl -v "https://dcs-beta.demdex.net/event?d_mid=88819962471507989271280036438453367558&d_orgid=A71B5B5B54F607AB0A4C98A3@AdobeOrg&d_rtbd=json&d_full=1&c_page=athletes-blog"
-```
-
-HTTP parameters sent:
-
-| Name                  | Description   |
-| --------------------- | ------------- |
-| c_page=athletes-blog  | The signal sent to AAM. This notifies AAM that the visitor has looked over the athletes blog. We have already created [a trait](https://bank-beta.demdex.com/portal/Traits/Traits.ddx#view/5923404) which rule's states that `c_page == "athletes-blog"`. Because of this we will qualify this device for the Athletes gtrait. |
-| d_rtbd=json           | This parameter instructs AAM to return a json response |
-| d_orgid=...           | Represents the IMS organization id, which uniquely identifies the Audience Manager client which is making the call (eg. PopularRetailer) |
-| d_mid=...             | Represents the Marketing Cloud ID. Audience Manager will decode this id and will obtain an AAM ID. The resulting trait will be stored keyed of this device id. |
-
-
-
-The formatted json response will look like this:
-```json
-{
-   "uuid":"89334862240161643561259517779946724685",
-   "dcs_region":7,
-   "data_collection":{  
-      "traits":[  
-         {  
-            "id":{  
-               "id":"89334862240161643561259517779946724685"
-            },
-            "new_traits":[  
-               {  
-                  "id":5923404
-               },
-               {  
-                  "id":5923375
-               }
-            ]
-         }
-      ],
-      "merge_rules":[  
-         // contains all the segments qualified
-      ]
-   }
-}
-```
-
-Notice the `new_traits` field. This contains two newly qualified gtraits:
-- [Athletes trait (ID: 5923404)](https://bank-beta.demdex.com/portal/Traits/Traits.ddx#view/5923404)
-- [Activity trait (ID: 5923375)](https://bank-beta.demdex.com/portal/Traits/Traits.ddx#view/5923375). This trait gets qualified automatically for any interaction. It is useful as it gives a metric on the total amount of visitors. 
-
-
----
-
-
 <h1>Demo Step 4</h1>
 
 Go to the home page by clicking the brand logo. Based on the Athletic trait, you should now see a customized offer with workout clothes for men & women.
@@ -321,90 +202,6 @@ Once you login, you become known to the website on the current device. This mean
 - By combining these two together, we’re getting qualified for the Women athletes segment. Based on this segment, we perform the website customization, resulting in the offer for Workout clothes for women.
 
 ---
-
-<h1>Optional tasks</h1>
-
-<h2>What's happening behind the scenes, when we authenticate?</h2>
-In the previous HTTP calls made to Audience Manager, we noticed the marketing cloud identifier was being sent to Audience Manager (the `d_mid` parameter).
-It turns out we can actually send multiple identifiers to AAM in a single HTTP call:
-- device identifiers (Marketing Cloud IDs / AAM IDs)
-- cross-device ids (eg. CRM id)
-- mobile ids (eg. Apple's IDFA or Google's Advertising Id)
-
-For PopularRetailer, whenever an user authenticates, we get access to the authenticated id (the customer id): **summit2017-99-female**. Since this same customer id can be used to authenticate from multiple devices, we call it a cross-device id.
-
-<h2>How to send a customer id to Audience Manager?</h2>
-
-
-<h2>Optional task 3</h2>
-
-Open up the Terminal app on your iMac. Then copy paste this HTTP call command and press enter:
-
-```
-curl -v "https://dcs-beta.demdex.net/event?d_mid=88819962471507989271280036438453367558&d_orgid=A71B5B5B54F607AB0A4C98A3@AdobeOrg&d_rtbd=json&d_full=1&d_cid=126066%01summit-110-female"
-```
-
-HTTP parameters sent:
-
-| Name                  | Description   |
-| --------------------- | ------------- |
-| d_rtbd=json           | This parameter instructs AAM to return a json response |
-| d_orgid=...           | Represents the IMS organization id, which uniquely identifies the Audience Manager client which is making the call (eg. PopularRetailer) |
-| d_mid=...             | Represents the Marketing Cloud ID. Audience Manager will decode this id and will obtain an AAM ID. |
-| d_cid=126066%01summit-110-female | Represents the cross-device customer id. <a href="https://marketing.adobe.com/resources/help/en_US/aam/cid.html" target="_blank">Visit the documentation page here</a>. Authenticated activity is stored keyed of cross-device ids, unauthenticated activity is stored keyed of device ids. If the HTTP call contains a valid cross-device customer id, AAM treats the call as authenticated activity. As a result, since our call does have a cross-device id declared on the HTTP call, the traits will be stored keyed of this cross-device customer id. The traits will NOT be stored on the device id for this specific call, since the cross-device id takes precedence. |
-
-
-
-The formatted json response will look like this:
-```json
-{
-   "uuid":"89334862240161643561259517779946724685",
-   "dcs_region":7,
-   "data_collection":{  
-      "traits":[  
-         {  
-            "id":{  
-               "namespace":126066,
-               "id":"summit-110-female"
-            },
-            "new_traits":[  
-               {  
-                  "id":5923407
-               },
-               {  
-                  "id":5923375
-               }
-            ]
-         },
-         {  
-            "id":{  
-               "id":"89334862240161643561259517779946724685"
-            },
-            "existing_traits":[  
-               {  
-                  "id":5923404,
-                  "frequencies":[  
-                     {  
-                        "day":3001,
-                        "realizations":1
-                     }
-                  ]
-               }
-            ]
-         }
-      ],
-      "merge_rules":[  
-          ...
-          "segments":[  
-               {  
-                  "id":5923408,
-                  "status":"REACQUIRED"
-               }
-         ]
-      ]
-   }
-}
-```
 
 <h2>What happened here?</h2>
 
@@ -491,7 +288,7 @@ When clicking on the sales tab, you will get qualified for the “Interested in 
 <h1>Demo step 10</h1>
 
 - Go on the PopularRetailer demo website home page. For this, click on the "PopularRetailer" on the top left.
-g- You should now see an offer for items on sale for both men & women on the landing page.
+- You should now see an offer for items on sale for both men & women on the landing page.
 
 ![Sales](https://cloud.githubusercontent.com/assets/952836/24172946/6236a308-0e47-11e7-93de-dc5d44448dd5.png)
 
@@ -590,4 +387,209 @@ After you make sure to be authenticated, go on the home page and click on the **
 - Audience Manager combines the various silos, whether first, second or third party data, which were previously not talking with each other, and makes it easy for you to act upon.
 - Regardless of your data source, destination or how you want to push the data out, Audience Manager will connect. You can send back information to your own systems for site customization or to ad networks for ad targeting. We know you work with different tools, so Audience Manager is designed to connect with anything. This neutral stance is critically important. You want interoperability and the option to leverage new tools or partners as designed. This decouples audience management from media.
 - Audience Manager is integrated with the Adobe Marketing Cloud solutions, offering seamless import, segmentation and export.
+
+---
+
+<h1>Optional tasks</h1>
+
+<h2>How are we qualifying for the "Athletes" trait?</h2>
+
+When the browser loads the Athletes blog article, an HTTP call is being made to Adobe Audience Manager.
+This HTTP call contains two important pieces of information:
+- the Audience Manager user id
+- the data signals
+
+<h2>What is an Audience Manager ID?</h2>
+The AAM ID is NOT a cross device id. Therefore, if the user has 3 devices, it will have (at least) 3 AAM IDs. The AAM ID is stored in a third party cookie. If you happen to have and use two browsers on your device, these will not share the cookie storage. As such, we will get two distinct Audience Manager IDs, one for each browser. 
+<h2>What happens on mobile apps, where we don't have cookies?</h2>
+The mobile apps using the AAM SDK, will store the Audience Manager ID in the app's internal storage. Multiple apps installed on the same device, will have different AAM ids.
+<h2>How do we obtain an AAM id?</h2>
+In our case we are dealing with a website. The website is integrated with the VisitorID.js library, maintained by the Adobe Audience Manager team. This javascript library takes care of generating an Audience Manager ID, when none is available. It does so by triggering a call from the browser to the Visitor ID service.
+
+<h3>Optional task 1:</h3>
+Emulate the Visitor ID call to Audience Manager, which the VisitorID.js library is making from the browser.
+
+Open up the Terminal app on your iMac. Then copy paste this HTTP call command and press enter:
+```
+curl "http://dcs-beta.demdex.net/id?d_visid_ver=2.0.0&d_rtbd=json&d_ver=2&d_orgid=A71B5B5B54F607AB0A4C98A3%40AdobeOrg"
+```
+
+HTTP parameters sent:
+
+| Name                  | Description   |
+| --------------------- | ------------- |
+| d_visid_ver=2.0.0     | The VisitorID.js library version |
+| d_rtbd=json           | This parameter instructs AAM to return a json response |
+| d_orgid=...           | Represents the IMS organization id, which uniquely identifies the Audience Manager client which is making the call (eg. PopularRetailer) |
+
+
+Notice that the HTTP API contains `demdex.net`, which is the Audience Manager's domain.
+
+The formatted Visitor ID json response will look like this:
+
+```json
+{  
+   "d_mid":"88819962471507989271280036438453367558",
+   "id_sync_ttl":604800,
+   "d_blob":"cIBAx_aQzFEHcPoEv0GwcQ",
+   "dcs_region":7,
+   "d_ottl":7200,
+   "ibs":[  
+      {  
+         "id":"411",
+         "ttl":10080,
+         "tag":"img",
+         "fireURLSync":1,
+         "syncOnPage":1,
+         "url":[  
+            "//cm.everesttech.net/cm/dd?d_uuid=89334862240161643561259517779946724685"
+         ]
+      }
+   ],
+   "subdomain":"aamsummit"
+}
+```
+
+Notice the `d_mid` parameter, which represents the Marketing Cloud ID. The MID can be decoded by Audience Manager to obtain an AAM ID.
+
+<h2>We have an AAM ID. How do we send the data?</h2>
+
+In our situation, we want to notify Audience Manager that the current visitor has looked over the Athletes blog article. We do this by making a data collection HTTP call to Audience Manager.
+
+<h3>Optional task 2: Send realtime data to Audience Manager</h3>
+
+Open up the Terminal app on your iMac. Then copy paste this HTTP call command and press enter:
+```
+curl -v "https://dcs-beta.demdex.net/event?d_mid=88819962471507989271280036438453367558&d_orgid=A71B5B5B54F607AB0A4C98A3@AdobeOrg&d_rtbd=json&d_full=1&c_page=athletes-blog"
+```
+
+HTTP parameters sent:
+
+| Name                  | Description   |
+| --------------------- | ------------- |
+| c_page=athletes-blog  | The signal sent to AAM. This notifies AAM that the visitor has looked over the athletes blog. We have already created [a trait](https://bank-beta.demdex.com/portal/Traits/Traits.ddx#view/5923404) which rule's states that `c_page == "athletes-blog"`. Because of this we will qualify this device for the Athletes gtrait. |
+| d_rtbd=json           | This parameter instructs AAM to return a json response |
+| d_orgid=...           | Represents the IMS organization id, which uniquely identifies the Audience Manager client which is making the call (eg. PopularRetailer) |
+| d_mid=...             | Represents the Marketing Cloud ID. Audience Manager will decode this id and will obtain an AAM ID. The resulting trait will be stored keyed of this device id. |
+
+
+
+The formatted json response will look like this:
+```json
+{
+   "uuid":"89334862240161643561259517779946724685",
+   "dcs_region":7,
+   "data_collection":{  
+      "traits":[  
+         {  
+            "id":{  
+               "id":"89334862240161643561259517779946724685"
+            },
+            "new_traits":[  
+               {  
+                  "id":5923404
+               },
+               {  
+                  "id":5923375
+               }
+            ]
+         }
+      ],
+      "merge_rules":[  
+         // contains all the segments qualified
+      ]
+   }
+}
+```
+
+Notice the `new_traits` field. This contains two newly qualified gtraits:
+- [Athletes trait (ID: 5923404)](https://bank-beta.demdex.com/portal/Traits/Traits.ddx#view/5923404)
+- [Activity trait (ID: 5923375)](https://bank-beta.demdex.com/portal/Traits/Traits.ddx#view/5923375). This trait gets qualified automatically for any interaction. It is useful as it gives a metric on the total amount of visitors. 
+
+
+---
+
+<h1>Optional tasks</h1>
+
+<h2>What's happening behind the scenes, when we authenticate?</h2>
+In the previous HTTP calls made to Audience Manager, we noticed the marketing cloud identifier was being sent to Audience Manager (the `d_mid` parameter).
+It turns out we can actually send multiple identifiers to AAM in a single HTTP call:
+- device identifiers (Marketing Cloud IDs / AAM IDs)
+- cross-device ids (eg. CRM id)
+- mobile ids (eg. Apple's IDFA or Google's Advertising Id)
+
+For PopularRetailer, whenever an user authenticates, we get access to the authenticated id (the customer id): **summit2017-99-female**. Since this same customer id can be used to authenticate from multiple devices, we call it a cross-device id.
+
+<h2>How to send a customer id to Audience Manager?</h2>
+
+
+<h2>Optional task 3</h2>
+
+Open up the Terminal app on your iMac. Then copy paste this HTTP call command and press enter:
+
+```
+curl -v "https://dcs-beta.demdex.net/event?d_mid=88819962471507989271280036438453367558&d_orgid=A71B5B5B54F607AB0A4C98A3@AdobeOrg&d_rtbd=json&d_full=1&d_cid=126066%01summit-110-female"
+```
+
+HTTP parameters sent:
+
+| Name                  | Description   |
+| --------------------- | ------------- |
+| d_rtbd=json           | This parameter instructs AAM to return a json response |
+| d_orgid=...           | Represents the IMS organization id, which uniquely identifies the Audience Manager client which is making the call (eg. PopularRetailer) |
+| d_mid=...             | Represents the Marketing Cloud ID. Audience Manager will decode this id and will obtain an AAM ID. |
+| d_cid=126066%01summit-110-female | Represents the cross-device customer id. <a href="https://marketing.adobe.com/resources/help/en_US/aam/cid.html" target="_blank">Visit the documentation page here</a>. Authenticated activity is stored keyed of cross-device ids, unauthenticated activity is stored keyed of device ids. If the HTTP call contains a valid cross-device customer id, AAM treats the call as authenticated activity. As a result, since our call does have a cross-device id declared on the HTTP call, the traits will be stored keyed of this cross-device customer id. The traits will NOT be stored on the device id for this specific call, since the cross-device id takes precedence. |
+
+
+
+The formatted json response will look like this:
+```json
+{
+   "uuid":"89334862240161643561259517779946724685",
+   "dcs_region":7,
+   "data_collection":{  
+      "traits":[  
+         {  
+            "id":{  
+               "namespace":126066,
+               "id":"summit-110-female"
+            },
+            "new_traits":[  
+               {  
+                  "id":5923407
+               },
+               {  
+                  "id":5923375
+               }
+            ]
+         },
+         {  
+            "id":{  
+               "id":"89334862240161643561259517779946724685"
+            },
+            "existing_traits":[  
+               {  
+                  "id":5923404,
+                  "frequencies":[  
+                     {  
+                        "day":3001,
+                        "realizations":1
+                     }
+                  ]
+               }
+            ]
+         }
+      ],
+      "merge_rules":[  
+          ...
+          "segments":[  
+               {  
+                  "id":5923408,
+                  "status":"REACQUIRED"
+               }
+         ]
+      ]
+   }
+}
+```
 
