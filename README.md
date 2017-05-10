@@ -386,7 +386,7 @@ After you make sure to be authenticated, go on the home page and click on the **
 - By helping you build unique audience profiles, you can identify your most valuable segments and use them across any digital channel.
 - Audience Manager combines the various silos, whether first, second or third party data, which were previously not talking with each other, and makes it easy for you to act upon.
 - Regardless of your data source, destination or how you want to push the data out, Audience Manager will connect. You can send back information to your own systems for site customization or to ad networks for ad targeting. We know you work with different tools, so Audience Manager is designed to connect with anything. This neutral stance is critically important. You want interoperability and the option to leverage new tools or partners as designed. This decouples audience management from media.
-- Audience Manager is integrated with the Adobe Marketing Cloud solutions, offering seamless import, segmentation and export.
+- Audience Manager is integrated with solutions in Adobe Experience Cloud offering seamless import, segmentation and export.
 
 ---
 
